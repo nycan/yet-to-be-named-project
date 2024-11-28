@@ -11,6 +11,7 @@ A quadrupedal robot, like Boston Dynamics' robot dog, or MIT's cheetah.
 
 ## Nice to Have List
 
+- lateral shoulder movement
 - Stablization algorithms
 - Other forms of locomotion (eg. rolling/hopping) & transitions between
 - Error correction

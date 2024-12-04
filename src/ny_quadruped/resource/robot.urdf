@@ -1,0 +1,6 @@
+<?xml version="1.0" ?>
+<robot name="Quadrupedal robot">
+    <webots>
+        <plugin type="ny_quadruped.driver.Driver" />
+    </webots>
+</robot>

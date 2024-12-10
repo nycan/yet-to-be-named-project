@@ -78,6 +78,7 @@ Robot {
     }
     Transform {
       translation 0 0 0.0415
+      rotation 1 1.5707996938995747 0 0
       children [
         Shape {
           appearance PBRAppearance {
@@ -139,7 +140,8 @@ Robot {
     }
   ]
   boundingObject Transform {
-    translation 0 0 0.0415
+    translation 0 0 0.0415c
+    rotation 1 1.5707996938995747 0 0
     children [
       USE BODY
     ]

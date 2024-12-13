@@ -22,35 +22,29 @@ Robot {
     HingeJoint {
       jointParameters HingeJointParameters {
         axis 0 1 0
-        anchor 0 0 0.025
+        anchor -0.07 0 0.025
       }
       device [
         RotationalMotor {
-          name "left wheel motor"
+          name "back left leg motor"
         }
       ]
       endPoint Solid {
-        translation -0.07 0.045 0.025
+        translation -0.07 0.045 0
         children [
-          DEF WHEEL Transform {
-            rotation 1 0 0 1.5707996938995747
-            children [
-              Shape {
-                appearance PBRAppearance {
-                  baseColor 1 0 0
-                  roughness 1
-                  metalness 0
-                }
-                geometry Cylinder {
-                  height 0.01
-                  radius 0.025
-                }
-              }
-            ]
+          DEF LEG Shape {
+            appearance PBRAppearance {
+              baseColor 1 0 0
+              roughness 1
+              metalness 0
+            }
+            geometry Box {
+              size 0.01 0.01 0.045
+            }
           }
         ]
-        name "left wheel"
-        boundingObject USE WHEEL
+        name "back left leg"
+        boundingObject USE LEG
         physics Physics {
         }
       }
@@ -58,20 +52,20 @@ Robot {
     HingeJoint {
       jointParameters HingeJointParameters {
         axis 0 1 0
-        anchor 0 0 0.025
+        anchor -0.07 0 0.025
       }
       device [
         RotationalMotor {
-          name "right wheel motor"
+          name "back right leg motor"
         }
       ]
       endPoint Solid {
-        translation -0.07 -0.045 0.025
+        translation -0.07 -0.045 0
         children [
-          USE WHEEL
+          USE LEG
         ]
-        name "right wheel"
-        boundingObject USE WHEEL
+        name "back right leg"
+        boundingObject USE LEG
         physics Physics {
         }
       }
@@ -79,20 +73,20 @@ Robot {
     HingeJoint {
       jointParameters HingeJointParameters {
         axis 0 1 0
-        anchor 0 0 0.025
+        anchor 0.07 0 0.025
       }
       device [
         RotationalMotor {
-          name "front left wheel motor"
+          name "front left leg motor"
         }
       ]
       endPoint Solid {
-        translation 0.07 -0.045 0.025
+        translation 0.07 0.045 0
         children [
-          USE WHEEL
+          USE LEG
         ]
-        name "front left wheel"
-        boundingObject USE WHEEL
+        name "front left leg"
+        boundingObject USE LEG
         physics Physics {
         }
       }
@@ -100,20 +94,20 @@ Robot {
     HingeJoint {
       jointParameters HingeJointParameters {
         axis 0 1 0
-        anchor 0 0 0.025
+        anchor 0.07 0 0.025
       }
       device [
         RotationalMotor {
-          name "front right wheel motor"
+          name "front right leg motor"
         }
       ]
       endPoint Solid {
-        translation 0.07 -0.045 0.025
+        translation 0.07 -0.045 0
         children [
-          USE WHEEL
+          USE LEG
         ]
-        name "front right wheel"
-        boundingObject USE WHEEL
+        name "front right leg"
+        boundingObject USE LEG
         physics Physics {
         }
       }
@@ -135,7 +129,7 @@ Robot {
     }
   ]
   boundingObject Transform {
-    translation 0 0 0.0415
+    translation 0 0 0.09
     children [
       USE BODY
     ]

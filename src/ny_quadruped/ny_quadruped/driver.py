@@ -4,20 +4,37 @@ from geometry_msgs.msg import Twist
 HALF_DISTANCE_BETWEEN_WHEELS = 0.045
 WHEEL_RADIUS = 0.025
 
+# for moving and controlling a single leg
+class Leg:
+    def init(self, shoulder_motor, knee_motor):
+        self.shoulder_motor = shoulder_motor
+        self.knee_motor = knee_motor
+
+        self.shoulder_motor.setPosition(float('inf'))
+        self.shoulder_motor.setVelocity(0)
+
+        self.knee_motor.setPosition(float('inf'))
+        self.knee_motor.setVelocity(0)
+    
+    # temporary function
+    def move_at_velocity(self, velocity):
+        self.shoulder_motor.setVelocity(velocity)
+
+# driver for the whole robot
 class Driver:
     def init(self, webots_node, properties):
         self.__robot = webots_node.robot
-
-        self.__left_motor = self.__robot.getDevice('back left leg motor')
-        self.__right_motor = self.__robot.getDevice('back right leg motor')
-
-        self.__left_motor.setPosition(float('inf'))
-        self.__left_motor.setVelocity(0)
-
-        self.__right_motor.setPosition(float('inf'))
-        self.__right_motor.setVelocity(0)
-
-        self.__target_twist = Twist()
+        shoulder_motor_names = [
+            'back left leg motor',
+            'back right leg motor',
+            'front left leg motor',
+            'front right leg motor'
+        ]
+        self.legs = []
+        
+        # create each leg
+        for i in range(4):
+            legs.push(Leg(self.__robot.getDevice(shoulder_motor_names[i]), None))
 
         rclpy.init(args=None)
         self.__node = rclpy.create_node('driver')

@@ -6,15 +6,15 @@ WHEEL_RADIUS = 0.025
 
 # for moving and controlling a single leg
 class Leg:
-    def init(self, shoulder_motor, knee_motor):
+    def __init__(self, shoulder_motor, knee_motor):
         self.shoulder_motor = shoulder_motor
         self.knee_motor = knee_motor
 
         self.shoulder_motor.setPosition(float('inf'))
         self.shoulder_motor.setVelocity(0)
 
-        self.knee_motor.setPosition(float('inf'))
-        self.knee_motor.setVelocity(0)
+        # self.knee_motor.setPosition(float('inf'))
+        # self.knee_motor.setVelocity(0)
     
     # temporary function
     def move_at_velocity(self, velocity):
@@ -34,7 +34,9 @@ class Driver:
         
         # create each leg
         for i in range(4):
-            legs.push(Leg(self.__robot.getDevice(shoulder_motor_names[i]), None))
+            self.legs.append(Leg(self.__robot.getDevice(shoulder_motor_names[i]), None))
+        
+        self.__target_twist = Twist()
 
         rclpy.init(args=None)
         self.__node = rclpy.create_node('driver')
@@ -52,5 +54,8 @@ class Driver:
         command_motor_left = (forward_speed - angular_speed * HALF_DISTANCE_BETWEEN_WHEELS) / WHEEL_RADIUS
         command_motor_right = (forward_speed + angular_speed * HALF_DISTANCE_BETWEEN_WHEELS) / WHEEL_RADIUS
 
-        self.__left_motor.setVelocity(command_motor_left)
-        self.__right_motor.setVelocity(command_motor_right)
+        for i in range(4):
+            if i%2: # right
+                self.legs[i].move_at_velocity(command_motor_right)
+            else:
+                self.legs[i].move_at_velocity(command_motor_left)

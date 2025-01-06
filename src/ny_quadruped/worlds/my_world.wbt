@@ -19,10 +19,11 @@ CircleArena {
 }
 Robot {
   children [
+    # shoulders
     HingeJoint {
       jointParameters HingeJointParameters {
         axis 0 1 0
-        anchor -0.07 0 0.025
+        anchor -0.07 0 0.069
       }
       device [
         RotationalMotor {
@@ -30,7 +31,8 @@ Robot {
         }
       ]
       endPoint Solid {
-        translation -0.07 0.045 0
+        translation -0.07 0.045 0.044
+        # rotation 0 0.785398163 0
         children [
           DEF LEG Shape {
             appearance PBRAppearance {
@@ -52,7 +54,7 @@ Robot {
     HingeJoint {
       jointParameters HingeJointParameters {
         axis 0 1 0
-        anchor -0.07 0 0.025
+        anchor -0.07 0 0.069
       }
       device [
         RotationalMotor {
@@ -60,7 +62,8 @@ Robot {
         }
       ]
       endPoint Solid {
-        translation -0.07 -0.045 0
+        translation -0.07 -0.045 0.044
+        # rotation 0 0.785398163 0
         children [
           USE LEG
         ]
@@ -73,7 +76,7 @@ Robot {
     HingeJoint {
       jointParameters HingeJointParameters {
         axis 0 1 0
-        anchor 0.07 0 0.025
+        anchor 0.07 0 0.069
       }
       device [
         RotationalMotor {
@@ -81,7 +84,8 @@ Robot {
         }
       ]
       endPoint Solid {
-        translation 0.07 0.045 0
+        translation 0.07 0.045 0.044
+        # rotation 0 0.785398163 0
         children [
           USE LEG
         ]
@@ -94,7 +98,7 @@ Robot {
     HingeJoint {
       jointParameters HingeJointParameters {
         axis 0 1 0
-        anchor 0.07 0 0.025
+        anchor 0.07 0 0.069
       }
       device [
         RotationalMotor {
@@ -102,7 +106,8 @@ Robot {
         }
       ]
       endPoint Solid {
-        translation 0.07 -0.045 0
+        translation 0.07 -0.045 0.044
+        # rotation 0 0.785398163 0
         children [
           USE LEG
         ]
@@ -112,8 +117,95 @@ Robot {
         }
       }
     }
+    
+    # knees
+    HingeJoint {
+      jointParameters HingeJointParameters {
+        axis 0 1 0
+        anchor -0.07 0 0.045
+      }
+      device [
+        RotationalMotor {
+          name "left back knee motor"
+        }
+      ]
+      endPoint Solid {
+        translation -0.07 0.045 0
+        children [
+          USE LEG
+        ]
+        name "back left calf"
+        boundingObject USE LEG
+        physics Physics {
+        }
+      }
+    }
+    HingeJoint {
+      jointParameters HingeJointParameters {
+        axis 0 1 0
+        anchor 0.07 0 0.045
+      }
+      device [
+        RotationalMotor {
+          name "right back knee motor"
+        }
+      ]
+      endPoint Solid {
+        translation -0.07 -0.045 0
+        children [
+          USE LEG
+        ]
+        name "back right calf"
+        boundingObject USE LEG
+        physics Physics {
+        }
+      }
+    }
+    HingeJoint {
+      jointParameters HingeJointParameters {
+        axis 0 1 0
+        anchor 0.07 0 0.045
+      }
+      device [
+        RotationalMotor {
+          name "left front knee motor"
+        }
+      ]
+      endPoint Solid {
+        translation 0.07 0.045 0
+        children [
+          USE LEG
+        ]
+        name "left front calf"
+        boundingObject USE LEG
+        physics Physics {
+        }
+      }
+    }
+    HingeJoint {
+      jointParameters HingeJointParameters {
+        axis 0 1 0
+        anchor 0.07 0 0.045
+      }
+      device [
+        RotationalMotor {
+          name "front right knee motor"
+        }
+      ]
+      endPoint Solid {
+        translation 0.07 -0.045 0
+        children [
+          USE LEG
+        ]
+        name "front right calf"
+        boundingObject USE LEG
+        physics Physics {
+        }
+      }
+    }
+
     Transform {
-      translation 0 0 0.0415
+      translation 0 0 0.0865
       children [
         Shape {
           appearance PBRAppearance {

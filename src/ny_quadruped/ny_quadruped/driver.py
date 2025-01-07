@@ -13,8 +13,8 @@ class Leg:
         self.shoulder_motor.setPosition(float('inf'))
         self.shoulder_motor.setVelocity(0)
 
-        # self.knee_motor.setPosition(float('inf'))
-        # self.knee_motor.setVelocity(0)
+        self.knee_motor.setPosition(float('inf'))
+        self.knee_motor.setVelocity(0)
     
     # temporary function
     def move_at_velocity(self, velocity):
@@ -25,16 +25,25 @@ class Driver:
     def init(self, webots_node, properties):
         self.__robot = webots_node.robot
         shoulder_motor_names = [
-            'back left leg motor',
-            'back right leg motor',
-            'front left leg motor',
-            'front right leg motor'
+            'back left shoulder motor',
+            'back right shoulder motor',
+            'front left shoulder motor',
+            'front right shoulder motor'
+        ]
+        knee_motor_names = [
+            'back left knee motor',
+            'back right knee motor',
+            'front left knee motor',
+            'front right knee motor'
         ]
         self.legs = []
         
         # create each leg
         for i in range(4):
-            self.legs.append(Leg(self.__robot.getDevice(shoulder_motor_names[i]), None))
+            self.legs.append(Leg(
+                self.__robot.getDevice(shoulder_motor_names[i]),
+                self.__robot.getDevice(knee_motor_names[i])
+            ))
         
         self.__target_twist = Twist()
 

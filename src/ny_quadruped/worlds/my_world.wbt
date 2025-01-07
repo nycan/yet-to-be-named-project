@@ -27,7 +27,7 @@ Robot {
       }
       device [
         RotationalMotor {
-          name "back left leg motor"
+          name "back left shoulder motor"
         }
       ]
       endPoint Solid {
@@ -44,8 +44,28 @@ Robot {
               size 0.01 0.01 0.045
             }
           }
+          HingeJoint {
+            jointParameters HingeJointParameters {
+              axis 0 1 0
+              anchor -0.07 0 0.045
+            }
+            device [
+              RotationalMotor {
+                name "back left knee motor"
+              }
+            ]
+            endPoint Solid {
+              children [
+                USE LEG
+              ]
+              name "back left calf"
+              boundingObject USE LEG
+              physics Physics {
+              }
+            }
+          }
         ]
-        name "back left leg"
+        name "back left thigh"
         boundingObject USE LEG
         physics Physics {
         }
@@ -58,7 +78,7 @@ Robot {
       }
       device [
         RotationalMotor {
-          name "back right leg motor"
+          name "back right shoulder motor"
         }
       ]
       endPoint Solid {
@@ -66,8 +86,28 @@ Robot {
         # rotation 0 0.785398163 0
         children [
           USE LEG
+          HingeJoint {
+            jointParameters HingeJointParameters {
+              axis 0 1 0
+              anchor 0.07 0 0.045
+            }
+            device [
+              RotationalMotor {
+                name "back right knee motor"
+              }
+            ]
+            endPoint Solid {
+              children [
+                USE LEG
+              ]
+              name "back right calf"
+              boundingObject USE LEG
+              physics Physics {
+              }
+            }
+          }
         ]
-        name "back right leg"
+        name "back right thigh"
         boundingObject USE LEG
         physics Physics {
         }
@@ -80,7 +120,7 @@ Robot {
       }
       device [
         RotationalMotor {
-          name "front left leg motor"
+          name "front left shoulder motor"
         }
       ]
       endPoint Solid {
@@ -88,8 +128,28 @@ Robot {
         # rotation 0 0.785398163 0
         children [
           USE LEG
+          HingeJoint {
+            jointParameters HingeJointParameters {
+              axis 0 1 0
+              anchor 0.07 0 0.045
+            }
+            device [
+              RotationalMotor {
+                name "front left knee motor"
+              }
+            ]
+            endPoint Solid {
+              children [
+                USE LEG
+              ]
+              name "front left calf"
+              boundingObject USE LEG
+              physics Physics {
+              }
+            }
+          }
         ]
-        name "front left leg"
+        name "front left thigh"
         boundingObject USE LEG
         physics Physics {
         }
@@ -102,7 +162,7 @@ Robot {
       }
       device [
         RotationalMotor {
-          name "front right leg motor"
+          name "front right shoulder motor"
         }
       ]
       endPoint Solid {
@@ -110,94 +170,28 @@ Robot {
         # rotation 0 0.785398163 0
         children [
           USE LEG
+          HingeJoint {
+            jointParameters HingeJointParameters {
+              axis 0 1 0
+              anchor 0.07 0 0.045
+            }
+            device [
+              RotationalMotor {
+                name "front right knee motor"
+              }
+            ]
+            endPoint Solid {
+              children [
+                USE LEG
+              ]
+              name "front right calf"
+              boundingObject USE LEG
+              physics Physics {
+              }
+            }
+          }
         ]
-        name "front right leg"
-        boundingObject USE LEG
-        physics Physics {
-        }
-      }
-    }
-    
-    # knees
-    HingeJoint {
-      jointParameters HingeJointParameters {
-        axis 0 1 0
-        anchor -0.07 0 0.045
-      }
-      device [
-        RotationalMotor {
-          name "left back knee motor"
-        }
-      ]
-      endPoint Solid {
-        translation -0.07 0.045 0
-        children [
-          USE LEG
-        ]
-        name "back left calf"
-        boundingObject USE LEG
-        physics Physics {
-        }
-      }
-    }
-    HingeJoint {
-      jointParameters HingeJointParameters {
-        axis 0 1 0
-        anchor 0.07 0 0.045
-      }
-      device [
-        RotationalMotor {
-          name "right back knee motor"
-        }
-      ]
-      endPoint Solid {
-        translation -0.07 -0.045 0
-        children [
-          USE LEG
-        ]
-        name "back right calf"
-        boundingObject USE LEG
-        physics Physics {
-        }
-      }
-    }
-    HingeJoint {
-      jointParameters HingeJointParameters {
-        axis 0 1 0
-        anchor 0.07 0 0.045
-      }
-      device [
-        RotationalMotor {
-          name "left front knee motor"
-        }
-      ]
-      endPoint Solid {
-        translation 0.07 0.045 0
-        children [
-          USE LEG
-        ]
-        name "left front calf"
-        boundingObject USE LEG
-        physics Physics {
-        }
-      }
-    }
-    HingeJoint {
-      jointParameters HingeJointParameters {
-        axis 0 1 0
-        anchor 0.07 0 0.045
-      }
-      device [
-        RotationalMotor {
-          name "front right knee motor"
-        }
-      ]
-      endPoint Solid {
-        translation 0.07 -0.045 0
-        children [
-          USE LEG
-        ]
-        name "front right calf"
+        name "front right thigh"
         boundingObject USE LEG
         physics Physics {
         }

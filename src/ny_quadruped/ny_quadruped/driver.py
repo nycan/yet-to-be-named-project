@@ -4,6 +4,8 @@ from geometry_msgs.msg import Twist
 HALF_DISTANCE_BETWEEN_WHEELS = 0.045
 WHEEL_RADIUS = 0.025
 
+# https://www.desmos.com/calculator/g42ilolx0t
+
 # for moving and controlling a single leg
 class Leg:
     def __init__(self, shoulder_motor, knee_motor):

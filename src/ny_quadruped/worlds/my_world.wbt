@@ -19,11 +19,10 @@ CircleArena {
 }
 Robot {
   children [
-    # shoulders
     HingeJoint {
       jointParameters HingeJointParameters {
         axis 0 1 0
-        anchor -0.07 0 0.069
+        anchor -0.07 0 0.07
       }
       device [
         RotationalMotor {
@@ -31,7 +30,7 @@ Robot {
         }
       ]
       endPoint Solid {
-        translation -0.07 0.045 0.044
+        translation -0.07 0.045 0.045
         # rotation 0 0.785398163 0
         children [
           DEF LEG Shape {
@@ -47,7 +46,7 @@ Robot {
           HingeJoint {
             jointParameters HingeJointParameters {
               axis 0 1 0
-              anchor -0.07 0 0.045
+              anchor 0 0 0
             }
             device [
               RotationalMotor {
@@ -55,6 +54,7 @@ Robot {
               }
             ]
             endPoint Solid {
+              translation 0 0 -0.045
               children [
                 USE LEG
               ]
@@ -74,7 +74,7 @@ Robot {
     HingeJoint {
       jointParameters HingeJointParameters {
         axis 0 1 0
-        anchor -0.07 0 0.069
+        anchor -0.07 0 0.07
       }
       device [
         RotationalMotor {
@@ -82,14 +82,14 @@ Robot {
         }
       ]
       endPoint Solid {
-        translation -0.07 -0.045 0.044
+        translation -0.07 -0.045 0.045
         # rotation 0 0.785398163 0
         children [
           USE LEG
           HingeJoint {
             jointParameters HingeJointParameters {
               axis 0 1 0
-              anchor 0.07 0 0.045
+              anchor 0 0 0
             }
             device [
               RotationalMotor {
@@ -97,6 +97,7 @@ Robot {
               }
             ]
             endPoint Solid {
+              translation 0 0 -0.045
               children [
                 USE LEG
               ]
@@ -116,7 +117,7 @@ Robot {
     HingeJoint {
       jointParameters HingeJointParameters {
         axis 0 1 0
-        anchor 0.07 0 0.069
+        anchor 0.07 0 0.07
       }
       device [
         RotationalMotor {
@@ -124,14 +125,14 @@ Robot {
         }
       ]
       endPoint Solid {
-        translation 0.07 0.045 0.044
+        translation 0.07 0.045 0.045
         # rotation 0 0.785398163 0
         children [
           USE LEG
           HingeJoint {
             jointParameters HingeJointParameters {
               axis 0 1 0
-              anchor 0.07 0 0.045
+              anchor 0 0 0
             }
             device [
               RotationalMotor {
@@ -139,6 +140,7 @@ Robot {
               }
             ]
             endPoint Solid {
+              translation 0 0 -0.045
               children [
                 USE LEG
               ]
@@ -158,7 +160,7 @@ Robot {
     HingeJoint {
       jointParameters HingeJointParameters {
         axis 0 1 0
-        anchor 0.07 0 0.069
+        anchor 0.07 0 0.07
       }
       device [
         RotationalMotor {
@@ -166,14 +168,14 @@ Robot {
         }
       ]
       endPoint Solid {
-        translation 0.07 -0.045 0.044
+        translation 0.07 -0.045 0.045
         # rotation 0 0.785398163 0
         children [
           USE LEG
           HingeJoint {
             jointParameters HingeJointParameters {
               axis 0 1 0
-              anchor 0.07 0 0.045
+              anchor 0 0 0
             }
             device [
               RotationalMotor {
@@ -181,6 +183,7 @@ Robot {
               }
             ]
             endPoint Solid {
+              translation 0 0 -0.045
               children [
                 USE LEG
               ]

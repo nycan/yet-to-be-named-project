@@ -31,7 +31,7 @@ Robot {
       ]
       endPoint Solid {
         translation -0.07 0.045 0.045
-        # rotation 0 0.785398163 0
+        rotation 0 1 0 0.785398163
         children [
           DEF LEG Shape {
             appearance PBRAppearance {
@@ -55,6 +55,7 @@ Robot {
             ]
             endPoint Solid {
               translation 0 0 -0.045
+              rotation 0 1 0 1.57079633
               children [
                 USE LEG
               ]
@@ -83,7 +84,7 @@ Robot {
       ]
       endPoint Solid {
         translation -0.07 -0.045 0.045
-        # rotation 0 0.785398163 0
+        rotation 0 1 0 0.785398163
         children [
           USE LEG
           HingeJoint {
@@ -98,6 +99,7 @@ Robot {
             ]
             endPoint Solid {
               translation 0 0 -0.045
+              rotation 0 1 0 1.57079633
               children [
                 USE LEG
               ]
@@ -126,7 +128,7 @@ Robot {
       ]
       endPoint Solid {
         translation 0.07 0.045 0.045
-        # rotation 0 0.785398163 0
+        rotation 0 1 0 0.785398163
         children [
           USE LEG
           HingeJoint {
@@ -141,6 +143,7 @@ Robot {
             ]
             endPoint Solid {
               translation 0 0 -0.045
+              rotation 0 1 0 1.57079633
               children [
                 USE LEG
               ]
@@ -169,7 +172,7 @@ Robot {
       ]
       endPoint Solid {
         translation 0.07 -0.045 0.045
-        # rotation 0 0.785398163 0
+        rotation 0 1 0 0.785398163
         children [
           USE LEG
           HingeJoint {
@@ -184,6 +187,7 @@ Robot {
             ]
             endPoint Solid {
               translation 0 0 -0.045
+              rotation 0 1 0 1.57079633
               children [
                 USE LEG
               ]

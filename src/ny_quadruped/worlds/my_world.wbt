@@ -30,7 +30,7 @@ Robot {
         }
       ]
       endPoint Solid {
-        translation -0.07 0.045 0.045
+        translation -0.101819805 0.045 0.045
         rotation 0 1 0 0.785398163
         children [
           DEF LEG Shape {
@@ -54,7 +54,7 @@ Robot {
               }
             ]
             endPoint Solid {
-              translation 0 0 -0.045
+              translation 0.0318198052 0 -0.0131801948
               rotation 0 1 0 1.57079633
               children [
                 USE LEG
@@ -83,7 +83,7 @@ Robot {
         }
       ]
       endPoint Solid {
-        translation -0.07 -0.045 0.045
+        translation -0.101819805 -0.045 0.045
         rotation 0 1 0 0.785398163
         children [
           USE LEG
@@ -98,7 +98,7 @@ Robot {
               }
             ]
             endPoint Solid {
-              translation 0 0 -0.045
+              translation 0.0318198052 0 -0.0131801948
               rotation 0 1 0 1.57079633
               children [
                 USE LEG
@@ -127,7 +127,7 @@ Robot {
         }
       ]
       endPoint Solid {
-        translation 0.07 0.045 0.045
+        translation 0.0381801948 0.045 0.045
         rotation 0 1 0 0.785398163
         children [
           USE LEG
@@ -142,7 +142,7 @@ Robot {
               }
             ]
             endPoint Solid {
-              translation 0 0 -0.045
+              translation 0.0318198052 0 -0.0131801948
               rotation 0 1 0 1.57079633
               children [
                 USE LEG
@@ -171,7 +171,7 @@ Robot {
         }
       ]
       endPoint Solid {
-        translation 0.07 -0.045 0.045
+        translation 0.0381801948 -0.045 0.045
         rotation 0 1 0 0.785398163
         children [
           USE LEG
@@ -186,7 +186,7 @@ Robot {
               }
             ]
             endPoint Solid {
-              translation 0 0 -0.045
+              translation 0.0318198052 0 -0.0131801948
               rotation 0 1 0 1.57079633
               children [
                 USE LEG

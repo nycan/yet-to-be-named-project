@@ -1,10 +1,30 @@
 import rclpy
 from geometry_msgs.msg import Twist
+import math
 
 HALF_DISTANCE_BETWEEN_WHEELS = 0.045
 WHEEL_RADIUS = 0.025
 
-# https://www.desmos.com/calculator/g42ilolx0t
+# easiest just to deal with all quadrants
+def calculate_angle(x,y):
+    if x>0:
+            return math.atan(y/x)
+    elif x<0:
+        return math.atan(y/x)+math.pi
+    else:
+        return math.pi/2 + math.pi * (y<0)
+
+# finds the angles for the leg given the relative coordinates of the desired position
+# +x = forwards, +y = up
+def find_leg_positions(x,y):
+    # calculations shown here: https://www.desmos.com/calculator/p4zsulmvte
+    length = math.hypot(x,y)
+
+    #i1 on the desmos gives the solution with the knee as we want it
+    knee_x = x/2 + y/length * math.sqrt(0.045*0.045-length*length/4)
+    knee_y = y/2 - x/length * math.sqrt(0.045*0.045-length*length/4)
+
+    shoulder_angle = -math.atan(knee_y/knee_x)+math.pi*3/4
 
 # for moving and controlling a single leg
 class Leg:

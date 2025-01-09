@@ -5,10 +5,10 @@ import math
 HALF_DISTANCE_BETWEEN_WHEELS = 0.045
 WHEEL_RADIUS = 0.025
 
-# easiest just to deal with all quadrants
+# extension of atan to all quadrants
 def calculate_angle(x,y):
     if x>0:
-            return math.atan(y/x)
+        return (math.atan(y/x)+2*math.pi) % (2*math.pi)
     elif x<0:
         return math.atan(y/x)+math.pi
     else:
@@ -24,7 +24,8 @@ def find_leg_positions(x,y):
     knee_x = x/2 + y/length * math.sqrt(0.045*0.045-length*length/4)
     knee_y = y/2 - x/length * math.sqrt(0.045*0.045-length*length/4)
 
-    shoulder_angle = -math.atan(knee_y/knee_x)+math.pi*3/4
+    shoulder_angle = (-calculate_angle(knee_y/knee_x)+math.pi*13/4) % (2*math.pi)
+    knee_angle = calculate_angle((y-knee_y)/(x-knee_x))
 
 # for moving and controlling a single leg
 class Leg:

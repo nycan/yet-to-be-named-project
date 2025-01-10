@@ -24,8 +24,12 @@ def find_leg_positions(x,y):
     knee_x = x/2 + y/length * math.sqrt(0.045*0.045-length*length/4)
     knee_y = y/2 - x/length * math.sqrt(0.045*0.045-length*length/4)
 
-    shoulder_angle = (-calculate_angle(knee_y/knee_x)+math.pi*13/4) % (2*math.pi)
-    knee_angle = calculate_angle((y-knee_y)/(x-knee_x))
+    # negated since the motors move cw, not ccw
+    shoulder_angle = -calculate_angle(knee_y/knee_x)+2*math.pi
+    knee_angle = -calculate_angle((y-knee_y)/(x-knee_x))+2*math.pi
+    knee_angle += 3*math.pi - shoulder_angle
+
+    return (shoulder_angle+5/4*math.pi) % (2*math.pi), (knee_angle+7/4*math.pi) % (2*math.pi)
 
 # for moving and controlling a single leg
 class Leg:
@@ -47,6 +51,8 @@ class Leg:
 class Driver:
     def init(self, webots_node, properties):
         self.__robot = webots_node.robot
+
+        # find the motors by their name in the world file
         shoulder_motor_names = [
             'back left shoulder motor',
             'back right shoulder motor',
@@ -68,6 +74,7 @@ class Driver:
                 self.__robot.getDevice(knee_motor_names[i])
             ))
         
+        # recieve messages for instructions
         self.__target_twist = Twist()
 
         rclpy.init(args=None)

@@ -1,6 +1,7 @@
 import rclpy
 from geometry_msgs.msg import Twist
 import math
+import time
 
 from abc import ABC, abstractmethod
 from gpiozero import AngularServo
@@ -83,6 +84,11 @@ class RPMotor(Motor):
 HALF_DISTANCE_BETWEEN_WHEELS = 0.045
 WHEEL_RADIUS = 0.025
 
+# parametric equation describing the step
+def step_function(t):
+    t /= math.pi
+    return -0.01*math.cos(t)+0.01, 0.005*math.sin(t)-0.045*math.sqrt(2)
+
 # extension of atan to all quadrants
 def calculate_angle(x,y):
     if x>0:
@@ -120,10 +126,22 @@ class Leg:
 
         self.knee_motor.setPosition(float('inf'))
         self.knee_motor.setVelocity(0)
-    
-    # temporary function
-    def move_at_velocity(self, velocity):
-        self.shoulder_motor.setVelocity(velocity)
+
+    # puts the leg at a specific angle
+    # assumes that the next timestep will be the same as this one
+    def go_to(self, shoulder_angle, knee_angle, timestep):
+        shoulder_diff = (2*math.pi + shoulder_angle - self.shoulder_motor.getPosition()) % (2*math.pi)
+        knee_diff = (2*math.pi + knee_angle - self.knee_motor.getPosition()) % (2*math.pi)
+
+        # it is impossible to tell what direction to go in by the angle alone
+        # assume that we take the smaller path to the right angle
+        if shoulder_diff > math.pi:
+            shoulder_diff = 2*math.pi - shoulder_diff
+        if knee_diff > math.pi:
+            knee_diff = 2*math.pi - knee_diff
+        
+        self.shoulder_motor.setVelocity(shoulder_diff/timestep)
+        self.knee_motor.setVelocity(knee_diff/timestep)
 
 # driver for the whole robot
 class Driver:
@@ -159,11 +177,19 @@ class Driver:
         self.__node = rclpy.create_node('driver')
         self.__node.create_subscription(Twist, 'cmd_vel', self.__cmd_vel_callback, 1)
 
+        self.last_time = time.time()
+        self.timestep = 0
+
     def __cmd_vel_callback(self, twist):
         self.__target_twist = twist
 
     def step(self):
         rclpy.spin_once(self.__node, timeout_sec=0)
+
+        # again, theres probably an API but I couldn't find anything
+        new_time = time.time()
+        self.timestep = new_time - self.last_time
+        self.last_time = new_time
 
         forward_speed = self.__target_twist.linear.x
         angular_speed = self.__target_twist.angular.z
@@ -171,8 +197,6 @@ class Driver:
         command_motor_left = (forward_speed - angular_speed * HALF_DISTANCE_BETWEEN_WHEELS) / WHEEL_RADIUS
         command_motor_right = (forward_speed + angular_speed * HALF_DISTANCE_BETWEEN_WHEELS) / WHEEL_RADIUS
 
-        for i in range(4):
-            if i%2: # right
-                self.legs[i].move_at_velocity(command_motor_right)
-            else:
-                self.legs[i].move_at_velocity(command_motor_left)
+        desired_x, desired_y = step_function(new_time)
+        shoulder, knee = find_leg_positions(desired_x, desired_y)
+        self.legs[0].go_to(shoulder,knee)

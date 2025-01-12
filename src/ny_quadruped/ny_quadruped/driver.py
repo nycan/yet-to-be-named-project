@@ -81,13 +81,16 @@ class RPMotor(Motor):
 
         self.device = AngularServo(NAME_TO_PIN_MAP[name])
 
-HALF_DISTANCE_BETWEEN_WHEELS = 0.045
-WHEEL_RADIUS = 0.025
+# length of a single step in seconds
+STEP_DURATION = 0.5
+STEP_LENGTH = 0.01
+LEG_LENGTH = 0.045
 
 # parametric equation describing the step
 def step_function(t):
     t /= math.pi
-    return -0.01*math.cos(t)+0.01, 0.005*math.sin(t)-0.045*math.sqrt(2)
+    # adjusted by leg_length*sqrt(2) to adjust for the initial height
+    return -STEP_LENGTH*math.cos(t)+STEP_LENGTH, STEP_LENGTH/2*math.sin(t)-LEG_LENGTH*math.sqrt(2)
 
 # extension of atan to all quadrants
 def calculate_angle(x,y):
@@ -105,8 +108,8 @@ def find_leg_positions(x,y):
     length = math.hypot(x,y)
 
     #i1 on the desmos gives the solution with the knee as we want it
-    knee_x = x/2 + y/length * math.sqrt(0.045*0.045-length*length/4)
-    knee_y = y/2 - x/length * math.sqrt(0.045*0.045-length*length/4)
+    knee_x = x/2 + y/length * math.sqrt(LEG_LENGTH*LEG_LENGTH-length*length/4)
+    knee_y = y/2 - x/length * math.sqrt(LEG_LENGTH*LEG_LENGTH-length*length/4)
 
     # negated since the motors move cw, not ccw
     shoulder_angle = -calculate_angle(knee_y/knee_x)+2*math.pi
@@ -149,17 +152,18 @@ class Driver:
         self.__robot = webots_node.robot
 
         # find the motors by their name in the world file
+        # ordered by where in the step they are
         shoulder_motor_names = [
+            'front right shoulder motor',
             'back left shoulder motor',
-            'back right shoulder motor',
             'front left shoulder motor',
-            'front right shoulder motor'
+            'back right shoulder motor'
         ]
         knee_motor_names = [
+            'front right knee motor',
             'back left knee motor',
-            'back right knee motor',
             'front left knee motor',
-            'front right knee motor'
+            'back right knee motor'
         ]
         self.legs = []
         
@@ -180,9 +184,13 @@ class Driver:
         self.last_time = time.time()
         self.timestep = 0
 
+        self.last_step_started = time.time()
+        self.current_leg = 0
+
     def __cmd_vel_callback(self, twist):
         self.__target_twist = twist
 
+    # one timestep. not to be confused with the robot stepping
     def step(self):
         rclpy.spin_once(self.__node, timeout_sec=0)
 
@@ -191,12 +199,13 @@ class Driver:
         self.timestep = new_time - self.last_time
         self.last_time = new_time
 
-        forward_speed = self.__target_twist.linear.x
-        angular_speed = self.__target_twist.angular.z
+        if new_time - self.last_step_started >= STEP_DURATION:
+            self.current_leg = (self.current_leg+1)%4
+            self.last_step_started = new_time
 
-        command_motor_left = (forward_speed - angular_speed * HALF_DISTANCE_BETWEEN_WHEELS) / WHEEL_RADIUS
-        command_motor_right = (forward_speed + angular_speed * HALF_DISTANCE_BETWEEN_WHEELS) / WHEEL_RADIUS
+        # forward_speed = self.__target_twist.linear.x
+        # angular_speed = self.__target_twist.angular.z
 
         desired_x, desired_y = step_function(new_time)
         shoulder, knee = find_leg_positions(desired_x, desired_y)
-        self.legs[0].go_to(shoulder,knee)
+        self.legs[self.current_leg].go_to(shoulder,knee)

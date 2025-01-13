@@ -83,14 +83,17 @@ class RPMotor(Motor):
 
 # length of a single step in seconds
 STEP_DURATION = 0.5
-STEP_LENGTH = 0.01
+STEP_LENGTH = 0.015
 LEG_LENGTH = 0.045
 
 # parametric equation describing the step
 def step_function(t):
     t /= math.pi
+
+    x_coord = -STEP_LENGTH*math.cos(t)+STEP_LENGTH/3
     # adjusted by leg_length*sqrt(2) to adjust for the initial height
-    return -STEP_LENGTH*math.cos(t)+STEP_LENGTH, STEP_LENGTH/2*math.sin(t)-LEG_LENGTH*math.sqrt(2)
+    y_coord = STEP_LENGTH/3*math.sin(t)-LEG_LENGTH*math.sqrt(2)
+    return x_coord, y_coord
 
 # extension of atan to all quadrants
 def calculate_angle(x,y):
@@ -116,7 +119,11 @@ def find_leg_positions(x,y):
     knee_angle = -calculate_angle((y-knee_y)/(x-knee_x))+2*math.pi
     knee_angle += 3*math.pi - shoulder_angle
 
-    return (shoulder_angle+5/4*math.pi) % (2*math.pi), (knee_angle+7/4*math.pi) % (2*math.pi)
+    # adjustments for the initial angles of the motor
+    adjusted_shoulder = (shoulder_angle+5/4*math.pi) % (2*math.pi)
+    adjusted_knee = (knee_angle+7/4*math.pi) % (2*math.pi)
+
+    return adjusted_shoulder, adjusted_knee
 
 # for moving and controlling a single leg
 class Leg:
@@ -143,8 +150,14 @@ class Leg:
         if knee_diff > math.pi:
             knee_diff = 2*math.pi - knee_diff
         
+        # v = d/t!!
         self.shoulder_motor.setVelocity(shoulder_diff/timestep)
         self.knee_motor.setVelocity(knee_diff/timestep)
+    
+    # returns how far in front of the shoulder the foot is
+    def horizontal_foot_distance(self):
+        shoulder_angle = self.shoulder_motor.getPosition()
+        knee_angle = self.knee_motor.getPosition()
 
 # driver for the whole robot
 class Driver:
@@ -165,9 +178,9 @@ class Driver:
             'front left knee motor',
             'back right knee motor'
         ]
-        self.legs = []
         
         # create each leg
+        self.legs = []
         for i in range(4):
             self.legs.append(Leg(
                 self.__robot.getDevice(shoulder_motor_names[i]),
@@ -177,6 +190,7 @@ class Driver:
         # recieve messages for instructions
         self.__target_twist = Twist()
 
+        # initialization stuff
         rclpy.init(args=None)
         self.__node = rclpy.create_node('driver')
         self.__node.create_subscription(Twist, 'cmd_vel', self.__cmd_vel_callback, 1)
@@ -199,6 +213,7 @@ class Driver:
         self.timestep = new_time - self.last_time
         self.last_time = new_time
 
+        # update the step if the last one ended
         if new_time - self.last_step_started >= STEP_DURATION:
             self.current_leg = (self.current_leg+1)%4
             self.last_step_started = new_time
@@ -206,6 +221,21 @@ class Driver:
         # forward_speed = self.__target_twist.linear.x
         # angular_speed = self.__target_twist.angular.z
 
-        desired_x, desired_y = step_function(new_time)
-        shoulder, knee = find_leg_positions(desired_x, desired_y)
-        self.legs[self.current_leg].go_to(shoulder,knee)
+        # https://www.researchgate.net/figure/Successive-gait-pattern-of-a-crawl-gait_fig2_332471436
+        # the above link shows the center of mass and leg movements for the gait implemented here
+
+        # what part of the step we're on
+        step_fraction = (new_time - self.last_step_started) / STEP_DURATION
+
+        for i in range(4):
+            if i == self.current_leg:
+                desired_x, desired_y = step_function(step_fraction)
+            else:
+                # assume that friction is great enough that we can move the shoulder forward
+                # by telling it to move the foot backwards along the ground
+                # we can't really not assume that - every walking animal relies on it
+                desired_x = self.legs[i].horizontal_foot_distance() - self.timestep/STEP_DURATION * 
+                desired_y = -LEG_LENGTH*math.sqrt(2)
+            
+            shoulder, knee = find_leg_positions(desired_x, desired_y)
+            self.legs[i].go_to(shoulder,knee)

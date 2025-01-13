@@ -2,6 +2,84 @@ import rclpy
 from geometry_msgs.msg import Twist
 import math
 
+from abc import ABC, abstractmethod
+from gpiozero import AngularServo
+
+# webots motors are referred to by these names, make it so that the RP ones can be as well
+# the pins I chose are based on the Raspberry Pi 2b
+NAME_TO_PIN_MAP = {
+    'back left shoulder motor': 26,
+    'back right shoulder motor': 21,
+    'front left shoulder motor': 4,
+    'front right shoulder motor': 18,
+    'back left knee motor': 19,
+    'back right knee motor': 20,
+    'front left knee motor': 17,
+    'front right knee motor': 23
+}
+
+# the driver needs to interact with the motors somehow
+# the interface class is an ABC with implementations for interactions with webots and RPi
+class Interface(ABC):
+    @abstractmethod
+    def find_motor(self, name):
+        pass
+
+class Motor(ABC):
+    @abstractmethod
+    def set_velocity(self, velocity):
+        pass
+    
+    @abstractmethod
+    def get_velocity(self):
+        pass
+   
+   # note: should only be used in the webots base class
+    @abstractmethod
+    def set_position(self, position):
+        pass
+    
+    @abstractmethod
+    def get_position(self):
+        pass
+
+class WebotsInterface(Interface):
+    def __init__(self, webots_node):
+        super().__init__()
+
+        self.__robot = webots_node.robot
+    
+    def find_motor(self, name):
+        return self.__robot.getDevice(name)
+
+class WebotsMotor(Motor):
+    def __init__(self, device):
+        super().__init__()
+
+        self.device = device
+    
+    def set_velocity(self, velocity):
+        self.device.setVelocity(velocity) # their improper capitalization, not mine
+    
+    def get_velocity(self):
+        return self.device.getVelocity()
+    
+    def set_position(self, position):
+        self.device.setPosition(position)
+    
+    def get_position(self):
+        return self.device.getPosition()
+
+class RPInterface(Interface):
+    def __init__(self):
+        super().__init__()
+
+class RPMotor(Motor):
+    def __init__(self, name):
+        super().__init__()
+
+        self.device = AngularServo(NAME_TO_PIN_MAP[name])
+
 HALF_DISTANCE_BETWEEN_WHEELS = 0.045
 WHEEL_RADIUS = 0.025
 

@@ -19,6 +19,17 @@ NAME_TO_PIN_MAP = {
     'front right knee motor': 23
 }
 
+# chosen arbitrarily
+SERVO_MIN_ANGLE = 0
+SERVO_MAX_ANGLE = 180
+
+# length of a single step in seconds
+STEP_DURATION = 0.5
+
+# distance is in meters so every distance looks small, but thats what webots uses
+STEP_LENGTH = 0.015
+LEG_LENGTH = 0.045
+
 # the driver needs to interact with the motors somehow
 # the interface class is an ABC with implementations for interactions with webots and RPi
 class Interface(ABC):
@@ -27,15 +38,6 @@ class Interface(ABC):
         pass
 
 class Motor(ABC):
-    @abstractmethod
-    def set_velocity(self, velocity):
-        pass
-    
-    @abstractmethod
-    def get_velocity(self):
-        pass
-   
-   # note: should only be used in the webots base class
     @abstractmethod
     def set_position(self, position):
         pass
@@ -51,40 +53,46 @@ class WebotsInterface(Interface):
         self.__robot = webots_node.robot
     
     def find_motor(self, name):
-        return self.__robot.getDevice(name)
+        return WebotsMotor(self.__robot.getDevice(name))
 
 class WebotsMotor(Motor):
     def __init__(self, device):
         super().__init__()
 
         self.device = device
-    
-    def set_velocity(self, velocity):
-        self.device.setVelocity(velocity) # their improper capitalization, not mine
-    
-    def get_velocity(self):
-        return self.device.getVelocity()
+        self.position = 0 # getPosition doesn't exist even though getVelocity does???
+        self.device.setVelocity(0)
     
     def set_position(self, position):
-        self.device.setPosition(position)
+        self.device.setPosition(position) # their improper capitalization
+        self.position = position
     
     def get_position(self):
-        return self.device.getPosition()
+        return self.position
 
 class RPInterface(Interface):
     def __init__(self):
         super().__init__()
+    
+    def find_motor(self, name):
+        return RPMotor(name)
 
 class RPMotor(Motor):
     def __init__(self, name):
         super().__init__()
 
-        self.device = AngularServo(NAME_TO_PIN_MAP[name])
-
-# length of a single step in seconds
-STEP_DURATION = 0.5
-STEP_LENGTH = 0.015
-LEG_LENGTH = 0.045
+        self.device = AngularServo(
+            NAME_TO_PIN_MAP[name],
+            SERVO_MIN_ANGLE,
+            SERVO_MAX_ANGLE
+        )
+    
+    def set_position(self, position):
+        # gpiozero uses degrees instead of radians for some reason
+        self.device.angle = position * 180/math.pi
+    
+    def get_position(self):
+        return self.device.angle * math.pi/180
 
 # parametric equation describing the step
 def step_function(t):
@@ -131,38 +139,27 @@ class Leg:
         self.shoulder_motor = shoulder_motor
         self.knee_motor = knee_motor
 
-        self.shoulder_motor.setPosition(float('inf'))
-        self.shoulder_motor.setVelocity(0)
-
-        self.knee_motor.setPosition(float('inf'))
-        self.knee_motor.setVelocity(0)
-
     # puts the leg at a specific angle
     # assumes that the next timestep will be the same as this one
-    def go_to(self, shoulder_angle, knee_angle, timestep):
-        shoulder_diff = (2*math.pi + shoulder_angle - self.shoulder_motor.getPosition()) % (2*math.pi)
-        knee_diff = (2*math.pi + knee_angle - self.knee_motor.getPosition()) % (2*math.pi)
-
-        # it is impossible to tell what direction to go in by the angle alone
-        # assume that we take the smaller path to the right angle
-        if shoulder_diff > math.pi:
-            shoulder_diff = 2*math.pi - shoulder_diff
-        if knee_diff > math.pi:
-            knee_diff = 2*math.pi - knee_diff
-        
-        # v = d/t!!
-        self.shoulder_motor.setVelocity(shoulder_diff/timestep)
-        self.knee_motor.setVelocity(knee_diff/timestep)
+    def go_to(self, shoulder_angle, knee_angle):
+        self.shoulder_motor.set_position(shoulder_angle)
+        self.knee_motor.set_position(knee_angle)
     
     # returns how far in front of the shoulder the foot is
     def horizontal_foot_distance(self):
-        shoulder_angle = self.shoulder_motor.getPosition()
-        knee_angle = self.knee_motor.getPosition()
+        adjusted_shoulder = self.shoulder_motor.getPosition()
+        adjusted_knee = self.knee_motor.getPosition()
+
+        # get the adjusted angles
+        shoulder_angle = -adjusted_shoulder+5/4*math.pi
+        knee_angle = -adjusted_knee+7/4*math.pi
+
+        return math.cos(shoulder_angle)+math.cos(knee_angle)
 
 # driver for the whole robot
 class Driver:
     def init(self, webots_node, properties):
-        self.__robot = webots_node.robot
+        self.interface = WebotsInterface(webots_node)
 
         # find the motors by their name in the world file
         # ordered by where in the step they are

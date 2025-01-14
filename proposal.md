@@ -4,8 +4,8 @@ A quadrupedal robot, like Boston Dynamics' robot dog, or MIT's cheetah.
 ## Needs to Have List
 
 - Arduino/Raspberry Pi controller
-- 3d-printed/DIY parts
-- Electronic connections & actuators + power supply
+- ~~3d-printed/DIY parts~~ - excluded, not code-related
+- ~~Electronic connections & actuators + power supply~~  - excluded, not code-related
 - Sensors (servo or other)
 - Algorithms for walking
 

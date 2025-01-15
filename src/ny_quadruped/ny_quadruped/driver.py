@@ -19,9 +19,12 @@ NAME_TO_PIN_MAP = {
     'front right knee motor': 23
 }
 
-# chosen arbitrarily
+# chosen arbitrarily, would be based on the initial positions in a physical implementation
 SERVO_MIN_ANGLE = 0
 SERVO_MAX_ANGLE = 180
+
+# radians/second, based on the SG90 servo motor assuming no load
+SERVO_MAX_VELOCITY = 10.4719755
 
 # length of a single step in seconds
 STEP_DURATION = 0.5
@@ -61,10 +64,11 @@ class WebotsMotor(Motor):
 
         self.device = device
         self.position = 0 # getPosition doesn't exist even though getVelocity does???
-        self.device.setVelocity(0)
+        # this just specifies the max velocity since we are using position control
+        self.device.setVelocity(SERVO_MAX_VELOCITY) # their improper capitalization, library is just a port of a cpp one
     
     def set_position(self, position):
-        self.device.setPosition(position) # their improper capitalization
+        self.device.setPosition(position)
         self.position = position
     
     def get_position(self):
@@ -180,8 +184,8 @@ class Driver:
         self.legs = []
         for i in range(4):
             self.legs.append(Leg(
-                self.__robot.getDevice(shoulder_motor_names[i]),
-                self.__robot.getDevice(knee_motor_names[i])
+                self.interface.find_motor(shoulder_motor_names[i]),
+                self.interface.find_motor(knee_motor_names[i])
             ))
         
         # recieve messages for instructions
@@ -197,6 +201,8 @@ class Driver:
 
         self.last_step_started = time.time()
         self.current_leg = 0
+
+        self.horizontals_at_step_start = [0,0,0,0]
 
     def __cmd_vel_callback(self, twist):
         self.__target_twist = twist
@@ -215,6 +221,9 @@ class Driver:
             self.current_leg = (self.current_leg+1)%4
             self.last_step_started = new_time
 
+            for i in range(4):
+                self.horizontals_at_step_start[i] = self.legs[i].horizontal_foot_distance()
+
         # forward_speed = self.__target_twist.linear.x
         # angular_speed = self.__target_twist.angular.z
 
@@ -231,7 +240,7 @@ class Driver:
                 # assume that friction is great enough that we can move the shoulder forward
                 # by telling it to move the foot backwards along the ground
                 # we can't really not assume that - every walking animal relies on it
-                desired_x = self.legs[i].horizontal_foot_distance() - self.timestep/STEP_DURATION * 
+                desired_x = self.horizontals_at_step_start[i] - STEP_LENGTH/3 * step_fraction
                 desired_y = -LEG_LENGTH*math.sqrt(2)
             
             shoulder, knee = find_leg_positions(desired_x, desired_y)

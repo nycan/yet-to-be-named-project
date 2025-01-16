@@ -30,7 +30,7 @@ SERVO_MAX_VELOCITY = 10.4719755
 STEP_DURATION = 0.5
 
 # distance is in meters so every distance looks small, but thats what webots uses
-STEP_LENGTH = 0.015
+STEP_LENGTH = 0.03
 LEG_LENGTH = 0.045
 
 # the driver needs to interact with the motors somehow
@@ -99,12 +99,12 @@ class RPMotor(Motor):
         return self.device.angle * math.pi/180
 
 # parametric equation describing the step
-def step_function(t):
+def step_function(t, start):
     t /= math.pi
 
-    x_coord = -STEP_LENGTH*math.cos(t)+STEP_LENGTH/3
+    x_coord = -STEP_LENGTH/2*math.cos(t)+STEP_LENGTH/6
     # adjusted by leg_length*sqrt(2) to adjust for the initial height
-    y_coord = STEP_LENGTH/3*math.sin(t)-LEG_LENGTH*math.sqrt(2)
+    y_coord = STEP_LENGTH/6*math.sin(t)-LEG_LENGTH*math.sqrt(2)
     return x_coord, y_coord
 
 # extension of atan to all quadrants
@@ -240,7 +240,7 @@ class Driver:
                 # assume that friction is great enough that we can move the shoulder forward
                 # by telling it to move the foot backwards along the ground
                 # we can't really not assume that - every walking animal relies on it
-                desired_x = self.horizontals_at_step_start[i] - STEP_LENGTH/3 * step_fraction
+                desired_x = self.horizontals_at_step_start[i] - STEP_LENGTH/6 * step_fraction
                 desired_y = -LEG_LENGTH*math.sqrt(2)
             
             shoulder, knee = find_leg_positions(desired_x, desired_y)

@@ -30,7 +30,7 @@ SERVO_MAX_VELOCITY = 10.4719755
 STEP_DURATION = 0.5
 
 # distance is in meters so every distance looks small, but thats what webots uses
-STEP_LENGTH = 0.03
+NORMAL_STEP_LENGTH = 0.03
 LEG_LENGTH = 0.045
 
 # the driver needs to interact with the motors somehow
@@ -99,12 +99,14 @@ class RPMotor(Motor):
         return self.device.angle * math.pi/180
 
 # parametric equation describing the step
-def step_function(t, start):
+def step_function(t, start, end):
     t /= math.pi
 
-    x_coord = -STEP_LENGTH/2*math.cos(t)+STEP_LENGTH/6
+    step_length  = end-start
+
+    x_coord = -step_length/2*(math.cos(t)-1) + start
     # adjusted by leg_length*sqrt(2) to adjust for the initial height
-    y_coord = STEP_LENGTH/6*math.sin(t)-LEG_LENGTH*math.sqrt(2)
+    y_coord = math.abs(step_length)/6*math.sin(t)-LEG_LENGTH*math.sqrt(2)
     return x_coord, y_coord
 
 # extension of atan to all quadrants
@@ -200,7 +202,8 @@ class Driver:
         self.timestep = 0
 
         self.last_step_started = time.time()
-        self.current_leg = 0
+        self.current_leg = 0 # kinda redundant but makes things more clear
+        self.step_num = 1
 
         self.horizontals_at_step_start = [0,0,0,0]
 
@@ -218,8 +221,11 @@ class Driver:
 
         # update the step if the last one ended
         if new_time - self.last_step_started >= STEP_DURATION:
-            self.current_leg = (self.current_leg+1)%4
             self.last_step_started = new_time
+            self.last_step_started += 1
+
+            if self.step_num > 3:
+                self.current_leg = (self.current_leg+1)%4
 
             for i in range(4):
                 self.horizontals_at_step_start[i] = self.legs[i].horizontal_foot_distance()
@@ -233,15 +239,47 @@ class Driver:
         # what part of the step we're on
         step_fraction = (new_time - self.last_step_started) / STEP_DURATION
 
+        if self.step_num == 1:
+            self.first_step(step_fraction)
+            return
+        elif self.step_num == 2:
+            self.second_step(step_fraction)
+            return
+
         for i in range(4):
             if i == self.current_leg:
-                desired_x, desired_y = step_function(step_fraction)
+                desired_x, desired_y = step_function(
+                    step_fraction,
+                    self.horizontals_at_step_start[i],
+                    self.horizontals_at_step_start[i] + NORMAL_STEP_LENGTH
+                )
             else:
                 # assume that friction is great enough that we can move the shoulder forward
                 # by telling it to move the foot backwards along the ground
                 # we can't really not assume that - every walking animal relies on it
-                desired_x = self.horizontals_at_step_start[i] - STEP_LENGTH/6 * step_fraction
+                desired_x = self.horizontals_at_step_start[i] - NORMAL_STEP_LENGTH/3 * step_fraction
                 desired_y = -LEG_LENGTH*math.sqrt(2)
             
             shoulder, knee = find_leg_positions(desired_x, desired_y)
             self.legs[i].go_to(shoulder,knee)
+    
+    # not proud of this repetition but whatever
+    def first_step(self, step_fraction):
+        desired_x, desired_y = step_function(
+            step_fraction,
+            0,
+            -2/3 * NORMAL_STEP_LENGTH
+        )
+
+        shoulder, knee = find_leg_positions(desired_x, desired_y)
+        self.legs[0].go_to(shoulder, knee)
+    
+    def second_step(self, step_fraction):
+        desired_x, desired_y = step_function(
+            step_fraction,
+            0,
+            2/3 * NORMAL_STEP_LENGTH
+        )
+
+        shoulder, knee = find_leg_positions(desired_x, desired_y)
+        self.legs[0].go_to(shoulder, knee)

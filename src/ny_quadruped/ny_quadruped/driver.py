@@ -159,9 +159,9 @@ class Leg:
 
         # get the adjusted angles
         shoulder_angle = -adjusted_shoulder+5/4*math.pi
-        knee_angle = -adjusted_knee+7/4*math.pi
+        knee_angle = adjusted_knee-3/2*math.pi-(math.pi+shoulder_angle)
 
-        return math.cos(shoulder_angle)+math.cos(knee_angle)
+        return LEG_LENGTH*(math.cos(shoulder_angle)+math.cos(knee_angle))
 
 # driver for the whole robot
 class Driver:

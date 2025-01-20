@@ -4,7 +4,8 @@ import math
 import time
 
 from abc import ABC, abstractmethod
-from gpiozero import AngularServo
+# gpiozero breaks if youre not actually on a rpi
+# from gpiozero import AngularServo
 
 # webots motors are referred to by these names, make it so that the RP ones can be as well
 # the pins I chose are based on the Raspberry Pi 2b
@@ -24,7 +25,7 @@ SERVO_MIN_ANGLE = 0
 SERVO_MAX_ANGLE = 180
 
 # radians/second, based on the SG90 servo motor assuming no load
-SERVO_MAX_VELOCITY = 10.4719755
+SERVO_MAX_VELOCITY = 10
 
 # length of a single step in seconds
 NORMAL_STEP_DURATION = 0.3
@@ -100,13 +101,13 @@ class RPMotor(Motor):
 
 # parametric equation describing the step
 def step_function(t, start, end):
-    t /= math.pi
+    t *= math.pi
 
     this_step_length  = end-start
 
     x_coord = -this_step_length/2*(math.cos(t)-1) + start
     # adjusted by leg_length*sqrt(2) to adjust for the initial height
-    y_coord = math.abs(this_step_length)/6*math.sin(t)-LEG_LENGTH*math.sqrt(2)
+    y_coord = abs(this_step_length)/6*math.sin(t)-LEG_LENGTH*math.sqrt(2)
     return x_coord, y_coord
 
 # extension of atan to all quadrants
@@ -129,13 +130,13 @@ def find_leg_positions(x,y):
     knee_y = y/2 - x/length * math.sqrt(LEG_LENGTH*LEG_LENGTH-length*length/4)
 
     # negated since the motors move cw, not ccw
-    shoulder_angle = -calculate_angle(knee_y/knee_x)+2*math.pi
-    knee_angle = -calculate_angle((y-knee_y)/(x-knee_x))+2*math.pi
-    knee_angle += 3*math.pi - shoulder_angle
+    shoulder_angle = -calculate_angle(knee_x, knee_y)+2*math.pi
+    knee_angle = -calculate_angle(x-knee_x, y-knee_y)+2*math.pi
+    knee_angle += 5*math.pi - shoulder_angle
 
     # adjustments for the initial angles of the motor
     adjusted_shoulder = (shoulder_angle+5/4*math.pi) % (2*math.pi)
-    adjusted_knee = (knee_angle+7/4*math.pi) % (2*math.pi)
+    adjusted_knee = (knee_angle+3/2*math.pi) % (2*math.pi)
 
     return adjusted_shoulder, adjusted_knee
 
@@ -153,8 +154,8 @@ class Leg:
     
     # returns how far in front of the shoulder the foot is
     def horizontal_foot_distance(self):
-        adjusted_shoulder = self.shoulder_motor.getPosition()
-        adjusted_knee = self.knee_motor.getPosition()
+        adjusted_shoulder = self.shoulder_motor.get_position()
+        adjusted_knee = self.knee_motor.get_position()
 
         # get the adjusted angles
         shoulder_angle = -adjusted_shoulder+5/4*math.pi
@@ -222,7 +223,7 @@ class Driver:
 
         # update the step if the last one ended
         if new_time - self.last_step_started >= self.curr_step_duration:
-            self.update_step()
+            self.update_step(new_time)
 
         # forward_speed = self.__target_twist.linear.x
         # angular_speed = self.__target_twist.angular.z
@@ -232,6 +233,9 @@ class Driver:
 
         # what part of the step we're on
         step_fraction = (new_time - self.last_step_started) / self.curr_step_duration
+        assert(step_fraction<=1)
+
+        print(self.step_num, self.horizontals_at_step_start)
 
         if self.step_num == 1:
             self.first_step(step_fraction)
@@ -242,6 +246,7 @@ class Driver:
 
         for i in range(4):
             if i == self.current_leg:
+                continue
                 desired_x, desired_y = step_function(
                     step_fraction,
                     self.horizontals_at_step_start[i],
@@ -253,16 +258,18 @@ class Driver:
                 # we can't really not assume that - every walking animal relies on it
                 desired_x = self.horizontals_at_step_start[i] - STEP_LENGTH/3 * step_fraction
                 desired_y = -LEG_LENGTH*math.sqrt(2)
-            
+                continue
+
             shoulder, knee = find_leg_positions(desired_x, desired_y)
             self.legs[i].go_to(shoulder,knee)
 
     # switch to next step
     def update_step(self, new_time):
         self.last_step_started = new_time
-        self.last_step_started += 1
+        self.step_num += 1
 
-        forward_speed = self.__target_twist.linear.x
+        # forward_speed = self.__target_twist.linear.x
+        forward_speed = 1
         self.curr_step_duration = NORMAL_STEP_DURATION/forward_speed
 
         if self.step_num > 3:

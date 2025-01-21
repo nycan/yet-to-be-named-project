@@ -271,7 +271,7 @@ class Driver:
         self.last_step_started = new_time
 
         if self.step_num > 2: 
-            forward_speed = self.__target_twist.linear.x
+            forward_speed = -self.__target_twist.linear.x
         else:
             forward_speed = 1 # handle special steps first
         prev_direction = self.direction # take the same step when switching directions

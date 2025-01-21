@@ -28,10 +28,10 @@ SERVO_MAX_ANGLE = 180
 SERVO_MAX_VELOCITY = 10
 
 # length of a single step in seconds
-NORMAL_STEP_DURATION = 0.3
+NORMAL_STEP_DURATION = 0.15
 
 # distance is in meters so every distance looks small, but thats what webots uses
-STEP_LENGTH = 0.03
+STEP_LENGTH = 0.02
 LEG_LENGTH = 0.045
 
 # the driver needs to interact with the motors somehow
@@ -212,6 +212,8 @@ class Driver:
 
         self.horizontals_at_step_start = [0,0,0,0]
 
+        self.direction = "forwards"
+
     def __cmd_vel_callback(self, twist):
         self.__target_twist = twist
 
@@ -228,8 +230,8 @@ class Driver:
         if new_time - self.last_step_started >= self.curr_step_duration:
             self.update_step(new_time)
 
-        # forward_speed = self.__target_twist.linear.x
-        # angular_speed = self.__target_twist.angular.z
+        if self.direction == "stopped":
+            return
 
         # https://www.researchgate.net/figure/Successive-gait-pattern-of-a-crawl-gait_fig2_332471436
         # the above link shows the center of mass and leg movements for the gait implemented here
@@ -245,18 +247,20 @@ class Driver:
             self.second_step(step_fraction)
             return
 
+        forwards = (self.direction == "forwards")
+
         for i in range(4):
             if i == self.current_leg:
                 desired_x, desired_y = step_function(
                     step_fraction,
                     self.horizontals_at_step_start[i],
-                    self.horizontals_at_step_start[i] + STEP_LENGTH
+                    self.horizontals_at_step_start[i] + STEP_LENGTH*(2*forwards-1)
                 )
             else:
                 # assume that friction is great enough that we can move the shoulder forward
                 # by telling it to move the foot backwards along the ground
                 # we can't really not assume that - every walking animal relies on it
-                desired_x = self.horizontals_at_step_start[i] - STEP_LENGTH/3 * step_fraction
+                desired_x = self.horizontals_at_step_start[i] - STEP_LENGTH/3 * step_fraction * (2*forwards-1)
                 desired_y = -LEG_LENGTH*math.sqrt(2)
 
             shoulder, knee = find_leg_positions(desired_x, desired_y)
@@ -265,14 +269,31 @@ class Driver:
     # switch to next step
     def update_step(self, new_time):
         self.last_step_started = new_time
+
+        if self.step_num > 2: 
+            forward_speed = self.__target_twist.linear.x
+        else:
+            forward_speed = 1 # handle special steps first
+        prev_direction = self.direction # take the same step when switching directions
+
+        if forward_speed == 0:
+            self.direction = "stopped"
+            # make sure we can get the cmd quickly when it changes
+            self.curr_step_duration = self.timestep
+            return
+        elif forward_speed > 0:
+            self.direction = "forwards"
+        else:
+            self.direction = "backwards"
+
         self.step_num += 1
 
-        # forward_speed = self.__target_twist.linear.x
-        forward_speed = 1
-        self.curr_step_duration = NORMAL_STEP_DURATION/forward_speed
+        self.curr_step_duration = abs(NORMAL_STEP_DURATION/forward_speed)
 
         if self.step_num > 3:
-            self.current_leg = (self.current_leg+1)%4
+            if prev_direction == self.direction:
+                forwards = (self.direction == "forwards")
+                self.current_leg = (self.current_leg+2*forwards-1)%4
 
         for i in range(4):
             self.horizontals_at_step_start[i] = self.legs[i].horizontal_foot_distance()

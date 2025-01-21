@@ -149,8 +149,11 @@ class Leg:
     # puts the leg at a specific angle
     # assumes that the next timestep will be the same as this one
     def go_to(self, shoulder_angle, knee_angle):
-        self.shoulder_motor.set_position(shoulder_angle)
-        self.knee_motor.set_position(knee_angle)
+        #! note: caution would need to be taken using this with real servos
+        shoulder_in_range = (shoulder_angle + 3/4*math.pi) % math.pi - 3/4*math.pi
+        knee_in_range = (knee_angle + 1/4*math.pi) % math.pi - 1/4*math.pi
+        self.shoulder_motor.set_position(shoulder_in_range)
+        self.knee_motor.set_position(knee_in_range)
     
     # returns how far in front of the shoulder the foot is
     def horizontal_foot_distance(self):
@@ -235,8 +238,6 @@ class Driver:
         step_fraction = (new_time - self.last_step_started) / self.curr_step_duration
         assert(step_fraction<=1)
 
-        print(self.step_num, self.horizontals_at_step_start)
-
         if self.step_num == 1:
             self.first_step(step_fraction)
             return
@@ -246,7 +247,6 @@ class Driver:
 
         for i in range(4):
             if i == self.current_leg:
-                continue
                 desired_x, desired_y = step_function(
                     step_fraction,
                     self.horizontals_at_step_start[i],
@@ -258,7 +258,6 @@ class Driver:
                 # we can't really not assume that - every walking animal relies on it
                 desired_x = self.horizontals_at_step_start[i] - STEP_LENGTH/3 * step_fraction
                 desired_y = -LEG_LENGTH*math.sqrt(2)
-                continue
 
             shoulder, knee = find_leg_positions(desired_x, desired_y)
             self.legs[i].go_to(shoulder,knee)

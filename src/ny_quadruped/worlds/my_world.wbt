@@ -29,6 +29,7 @@ Robot {
           name "back left shoulder motor"
           minPosition -2.35619449
           maxPosition 0.785398163
+          controlPID 10 5 0
         }
       ]
       endPoint Solid {
@@ -55,6 +56,7 @@ Robot {
                 name "back left knee motor"
                 minPosition -0.785398163
                 maxPosition 2.35619449
+                controlPID 10 5 0
               }
             ]
             endPoint Solid {
@@ -86,6 +88,7 @@ Robot {
           name "back right shoulder motor"
           minPosition -2.35619449
           maxPosition 0.785398163
+          controlPID 10 5 0
         }
       ]
       endPoint Solid {
@@ -103,6 +106,7 @@ Robot {
                 name "back right knee motor"
                 minPosition -0.785398163
                 maxPosition 2.35619449
+                controlPID 10 5 0
               }
             ]
             endPoint Solid {
@@ -134,6 +138,7 @@ Robot {
           name "front left shoulder motor"
           minPosition -2.35619449
           maxPosition 0.785398163
+          controlPID 10 5 0
         }
       ]
       endPoint Solid {
@@ -151,6 +156,7 @@ Robot {
                 name "front left knee motor"
                 minPosition -0.785398163
                 maxPosition 2.35619449
+                controlPID 10 5 0
               }
             ]
             endPoint Solid {
@@ -182,6 +188,7 @@ Robot {
           name "front right shoulder motor"
           minPosition -2.35619449
           maxPosition 0.785398163
+          controlPID 10 5 0
         }
       ]
       endPoint Solid {
@@ -199,6 +206,7 @@ Robot {
                 name "front right knee motor"
                 minPosition -0.785398163
                 maxPosition 2.35619449
+                controlPID 10 5 0
               }
             ]
             endPoint Solid {

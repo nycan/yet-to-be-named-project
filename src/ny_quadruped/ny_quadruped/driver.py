@@ -32,6 +32,7 @@ NORMAL_STEP_DURATION = 0.15
 
 # distance is in meters so every distance looks small, but thats what webots uses
 STEP_LENGTH = 0.02
+STEP_HEIGHT = 0.005
 LEG_LENGTH = 0.045
 
 # the driver needs to interact with the motors somehow
@@ -107,7 +108,7 @@ def step_function(t, start, end):
 
     x_coord = -this_step_length/2*(math.cos(t)-1) + start
     # adjusted by leg_length*sqrt(2) to adjust for the initial height
-    y_coord = abs(this_step_length)/6*math.sin(t)-LEG_LENGTH*math.sqrt(2)
+    y_coord = STEP_HEIGHT*math.sin(t)-LEG_LENGTH*math.sqrt(2)
     return x_coord, y_coord
 
 # extension of atan to all quadrants
@@ -210,7 +211,8 @@ class Driver:
         self.step_num = 1
         self.curr_step_duration = NORMAL_STEP_DURATION
 
-        self.horizontals_at_step_start = [0,0,0,0]
+        self.step_starts = [0,0,0,0]
+        self.step_ends = [-2/3*STEP_LENGTH, 2/3*STEP_LENGTH, 0, 0]
 
         self.direction = "forwards"
 
@@ -253,14 +255,14 @@ class Driver:
             if i == self.current_leg:
                 desired_x, desired_y = step_function(
                     step_fraction,
-                    self.horizontals_at_step_start[i],
-                    self.horizontals_at_step_start[i] + STEP_LENGTH*(2*forwards-1)
+                    self.step_starts[i],
+                    self.step_ends[i]
                 )
             else:
                 # assume that friction is great enough that we can move the shoulder forward
                 # by telling it to move the foot backwards along the ground
                 # we can't really not assume that - every walking animal relies on it
-                desired_x = self.horizontals_at_step_start[i] - STEP_LENGTH/3 * step_fraction * (2*forwards-1)
+                desired_x = self.step_starts[i] + (self.step_ends[i]-self.step_starts[i]) * step_fraction
                 desired_y = -LEG_LENGTH*math.sqrt(2)
 
             shoulder, knee = find_leg_positions(desired_x, desired_y)
@@ -270,7 +272,7 @@ class Driver:
     def update_step(self, new_time):
         self.last_step_started = new_time
 
-        if self.step_num > 2: 
+        if self.step_num > 3: 
             forward_speed = -self.__target_twist.linear.x
         else:
             forward_speed = 1 # handle special steps first
@@ -290,13 +292,19 @@ class Driver:
 
         self.curr_step_duration = abs(NORMAL_STEP_DURATION/forward_speed)
 
+        forwards = (self.direction == "forwards")
         if self.step_num > 3:
             if prev_direction == self.direction:
-                forwards = (self.direction == "forwards")
                 self.current_leg = (self.current_leg+2*forwards-1)%4
 
-        for i in range(4):
-            self.horizontals_at_step_start[i] = self.legs[i].horizontal_foot_distance()
+        self.step_starts = [self.legs[i].horizontal_foot_distance() for i in range(4)]
+        
+        if self.step_num > 2:
+            for i in range(4):
+                if i == self.current_leg:
+                    self.step_ends[i] += STEP_LENGTH * (2*forwards-1)
+                else:
+                    self.step_ends[i] -= STEP_LENGTH/3 * (2*forwards-1)
         
     # not proud of this repetition but whatever
     def first_step(self, step_fraction):

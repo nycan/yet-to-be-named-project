@@ -10,3 +10,11 @@
 - An indicator of the robot's front and back ends could prove useful in other demonstrations considering both backwards and forwards movement; this would also help when comparing different leg designs, ie. forward/backward knee bend
 - The inclusion of friction to replicate real-life situations was very creative
 - Eyesen rulz
+
+# CS person
+- didn'tw work first try
+- Worked second try, and the robot is capable of walking forwards and backwards
+- After about 10 or so seconds, the robot began to destabilize and tip over
+- Could be better if it can walk faster
+- really slow and looks kinda of dumb
+- but the legs were pretty realistic
